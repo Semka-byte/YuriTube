@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YuriTube</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать в YuriTube!🎥</h1>
+
+        <!-- Сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Форма загрузки -->
+        <div class="upload-section">
+            <form method="post" action="/upload" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-wrapper">
+                    <label for="video-upload" class="file-label">
+                        <i class="fas fa-cloud-upload-alt"></i> Выберите видео
+                    </label>
+                    <input type="file" id="video-upload" name="video" accept="video/*" required>
+                    <span id="file-name">Файл не выбран</span>
+                </div>
+                <button type="submit" class="upload-button">
+                    <i class="fas fa-upload"></i> Загрузить
+                </button>
+            </form>
+        </div>
+
+        <hr>
+
+        <!-- Список видео -->
+        <h2>Загруженные видео</h2>
+        {% if videos %}
+            <div class="video-grid">
+                {% for video in videos %}
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <video controls>
+                                <source src="{{ url_for('uploaded_file', filename=video.name) }}" type="video/mp4">
+                                Ваш браузер не поддерживает видео.
+                            </video>
+                        </div>
+                        <div class="video-info">
+                            <h3>{{ video.name }}</h3>
+                            <p><i class="fas fa-file-alt"></i> {{ video.info.size }}</p>
+                            <p><i class="far fa-calendar-alt"></i> {{ video.info.created }}</p>
+                            <form method="post" action="{{ url_for('delete_file', filename=video.name) }}" 
+                                  onsubmit="return confirm('Вы уверены, что хотите удалить это видео?');">
+                                <button type="submit" class="delete-button">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-videos">Нет загруженных видео.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Показ имени выбранного файла
+        document.getElementById('video-upload').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
